@@ -1,0 +1,28 @@
+[package]
+name = "hello"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+gpui = { git = "https://github.com/richerfu/zed.git", branch = "feat-ohos" }
+openharmony-ability = { git = "https://github.com/harmony-contrib/openharmony-ability.git" }
+openharmony-ability-derive = { git = "https://github.com/harmony-contrib/openharmony-ability.git" }
+
+
+napi-ohos = { version = "=1.1.6" }
+napi-derive-ohos = { version = "=1.1.6" }
+napi-derive-backend-ohos = { version = "=1.1.6" }
+ohos-hilog-binding = { version = "*", features = ["log"] }
+log = { version = "*" }
+
+[build-dependencies]
+napi-build-ohos = { version = "=1.1.6" }
+
+# 强制 patch 所有来源的依赖，确保统一使用本地路径
+[patch.crates-io]
+blade-graphics = { git = "https://github.com/richerfu/blade.git" }
