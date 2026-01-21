@@ -1,6 +1,7 @@
 # GPUI-DEMO
 
-**NOTE: NOT WORKING IN OHOS**
+
+![Logo](./fixture/image.png)
 
 ## Setup
 
