@@ -72,12 +72,15 @@ impl Render for OhosHello {
 #[openharmony_ability_derive::ability]
 pub fn openharmony_app(app: OpenHarmonyApp) {
     ohos_hilog_binding::log::init_once(Config::default().with_max_level(LevelFilter::Debug));
+
+    let inner_app = app.clone();
     // Initialize and run GPUI application
     // The event loop is automatically integrated by the platform
     Application::new()
         .with_ohos_app(app.clone())
-        .run(|cx: &mut App| {
-            let default_size = size(px(800.0), px(600.0));
+        .run(move |cx: &mut App| {
+            let info = inner_app.content_rect();
+            let default_size = size(px(info.width as _), px(info.height as _));
             let bounds = Bounds::centered(None, default_size, cx);
 
             cx.open_window(

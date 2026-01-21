@@ -9,7 +9,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-gpui = { git = "https://github.com/richerfu/zed.git", branch = "feat-ohos" }
+gpui = { git = "https://github.com/richerfu/zed.git", branch = "feat-shader" }
 openharmony-ability = { git = "https://github.com/harmony-contrib/openharmony-ability.git" }
 openharmony-ability-derive = { git = "https://github.com/harmony-contrib/openharmony-ability.git" }
 
