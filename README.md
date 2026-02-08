@@ -1,7 +1,9 @@
 # GPUI-DEMO
 
+Gpui demo with [Gpui-Component](https://github.com/longbridge/gpui-component).
 
-![Logo](./fixture/image.png)
+
+![Logo](./fixture/image.jpeg)
 
 ## Setup
 
@@ -19,7 +21,7 @@ build gpui-demo
 ohrs >= 1.3.1
 
 ```bash
-RUSTFLAGS=$(printf '--cfg\x1fgles') ohrs build --arch aarch
+RUSTFLAGS=$(printf '--cfg\x1fgles') ohrs build --arch aarch --release
 ```
 
 ## Run
