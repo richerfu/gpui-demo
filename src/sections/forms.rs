@@ -1,6 +1,5 @@
-use gpui::{AnyElement, IntoElement, ParentElement, Styled, Window, div, px};
+use gpui::{div, px, AnyElement, IntoElement, ParentElement, Styled, Window};
 use gpui_component::{
-    ActiveTheme as _, StyledExt as _, Sizable, WindowExt as _,
     checkbox::Checkbox,
     clipboard::Clipboard,
     color_picker::ColorPicker,
@@ -11,7 +10,7 @@ use gpui_component::{
     radio::Radio,
     select::Select,
     switch::Switch,
-    v_flex,
+    v_flex, ActiveTheme as _, Sizable, WindowExt as _,
 };
 
 use crate::ComponentGallery;
@@ -34,54 +33,52 @@ pub fn render(
                     .search_placeholder("Search options")
                     .cleanable(true),
             )
-            .child(
-                if is_compact {
-                    v_flex()
-                        .gap_2()
-                        .child(
-                            Checkbox::new("agree")
-                                .label("Agree")
-                                .checked(view.checkbox_checked)
-                                .on_click(cx.listener(|this, checked, _, cx| {
-                                    this.checkbox_checked = *checked;
-                                    cx.notify();
-                                })),
-                        )
-                        .child(
-                            Switch::new("switch")
-                                .label("Enable")
-                                .checked(view.switch_on)
-                                .on_click(cx.listener(|this, checked, _, cx| {
-                                    this.switch_on = *checked;
-                                    cx.notify();
-                                })),
-                        )
-                        .into_any_element()
-                } else {
-                    h_flex()
-                        .gap_3()
-                        .items_center()
-                        .child(
-                            Checkbox::new("agree")
-                                .label("Agree")
-                                .checked(view.checkbox_checked)
-                                .on_click(cx.listener(|this, checked, _, cx| {
-                                    this.checkbox_checked = *checked;
-                                    cx.notify();
-                                })),
-                        )
-                        .child(
-                            Switch::new("switch")
-                                .label("Enable")
-                                .checked(view.switch_on)
-                                .on_click(cx.listener(|this, checked, _, cx| {
-                                    this.switch_on = *checked;
-                                    cx.notify();
-                                })),
-                        )
-                        .into_any_element()
-                },
-            )
+            .child(if is_compact {
+                v_flex()
+                    .gap_2()
+                    .child(
+                        Checkbox::new("agree")
+                            .label("Agree")
+                            .checked(view.checkbox_checked)
+                            .on_click(cx.listener(|this, checked, _, cx| {
+                                this.checkbox_checked = *checked;
+                                cx.notify();
+                            })),
+                    )
+                    .child(
+                        Switch::new("switch")
+                            .label("Enable")
+                            .checked(view.switch_on)
+                            .on_click(cx.listener(|this, checked, _, cx| {
+                                this.switch_on = *checked;
+                                cx.notify();
+                            })),
+                    )
+                    .into_any_element()
+            } else {
+                h_flex()
+                    .gap_3()
+                    .items_center()
+                    .child(
+                        Checkbox::new("agree")
+                            .label("Agree")
+                            .checked(view.checkbox_checked)
+                            .on_click(cx.listener(|this, checked, _, cx| {
+                                this.checkbox_checked = *checked;
+                                cx.notify();
+                            })),
+                    )
+                    .child(
+                        Switch::new("switch")
+                            .label("Enable")
+                            .checked(view.switch_on)
+                            .on_click(cx.listener(|this, checked, _, cx| {
+                                this.switch_on = *checked;
+                                cx.notify();
+                            })),
+                    )
+                    .into_any_element()
+            })
             .child(
                 v_flex()
                     .gap_2()
@@ -104,21 +101,19 @@ pub fn render(
                             })),
                     ),
             )
-            .child(
-                if is_compact {
-                    v_flex()
-                        .gap_2()
-                        .child(DatePicker::new(&view.date_picker))
-                        .child(ColorPicker::new(&view.color_picker).small())
-                        .into_any_element()
-                } else {
-                    h_flex()
-                        .gap_3()
-                        .child(DatePicker::new(&view.date_picker))
-                        .child(ColorPicker::new(&view.color_picker).small())
-                        .into_any_element()
-                },
-            )
+            .child(if is_compact {
+                v_flex()
+                    .gap_2()
+                    .child(DatePicker::new(&view.date_picker))
+                    .child(ColorPicker::new(&view.color_picker).small())
+                    .into_any_element()
+            } else {
+                h_flex()
+                    .gap_3()
+                    .child(DatePicker::new(&view.date_picker))
+                    .child(ColorPicker::new(&view.color_picker).small())
+                    .into_any_element()
+            })
             .child(
                 Input::new(&view.input_state).suffix(
                     Clipboard::new("clipboard")
@@ -134,31 +129,19 @@ pub fn render(
             .child(
                 v_form()
                     .label_width(gpui::px(120.))
+                    .child(field().label("Name").child(Input::new(&view.form_name)))
+                    .child(field().label("Email").child(Input::new(&view.form_email)))
+                    .child(field().label("Role").child(Select::new(&view.form_role)))
                     .child(
-                        field()
-                            .label("Name")
-                            .child(Input::new(&view.form_name)),
-                    )
-                    .child(
-                        field()
-                            .label("Email")
-                            .child(Input::new(&view.form_email)),
-                    )
-                    .child(
-                        field().label("Role").child(Select::new(&view.form_role)),
-                    )
-                    .child(
-                        field()
-                            .label("Subscribe")
-                            .child(
-                                Switch::new("subscribe")
-                                    .checked(view.form_subscribe)
-                                    .label("Email updates")
-                                    .on_click(cx.listener(|this, checked, _, cx| {
-                                        this.form_subscribe = *checked;
-                                        cx.notify();
-                                    })),
-                            ),
+                        field().label("Subscribe").child(
+                            Switch::new("subscribe")
+                                .checked(view.form_subscribe)
+                                .label("Email updates")
+                                .on_click(cx.listener(|this, checked, _, cx| {
+                                    this.form_subscribe = *checked;
+                                    cx.notify();
+                                })),
+                        ),
                     )
                     .child(
                         field()
@@ -167,15 +150,18 @@ pub fn render(
                     ),
             )
             .child(
-                div().text_sm().text_color(cx.theme().muted_foreground).child(format!(
-                    "Input: {} | Selected: {}",
-                    view.input_state.read(cx).value(),
-                    view.select_state
-                        .read(cx)
-                        .selected_value()
-                        .cloned()
-                        .unwrap_or_else(|| "(none)".into())
-                )),
+                div()
+                    .text_sm()
+                    .text_color(cx.theme().muted_foreground)
+                    .child(format!(
+                        "Input: {} | Selected: {}",
+                        view.input_state.read(cx).value(),
+                        view.select_state
+                            .read(cx)
+                            .selected_value()
+                            .cloned()
+                            .unwrap_or_else(|| "(none)".into())
+                    )),
             ),
         cx,
     )

@@ -1,8 +1,6 @@
-use gpui::{AnyElement, IntoElement, ParentElement, Styled};
 use gpui::{div, Window};
-use gpui_component::{
-    ActiveTheme as _, ElementExt as _, StyledExt as _, IconName, input::Input, v_flex,
-};
+use gpui::{AnyElement, IntoElement, ParentElement, Styled};
+use gpui_component::{input::Input, v_flex, ActiveTheme as _, IconName, StyledExt as _};
 
 use crate::ComponentGallery;
 
@@ -25,6 +23,10 @@ pub fn render(
                 .text_color(cx.theme().muted_foreground)
                 .child("Mobile-style shadcn UI demo on OpenHarmony"),
         )
-        .child(Input::new(&view.input_state).prefix(IconName::Search).cleanable(true))
+        .child(
+            Input::new(&view.input_state)
+                .prefix(IconName::Search)
+                .cleanable(true),
+        )
         .into_any_element()
 }

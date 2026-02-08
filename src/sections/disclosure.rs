@@ -1,10 +1,9 @@
 use gpui::{AnyElement, IntoElement, ParentElement, Styled, Window};
 use gpui_component::{
-    StyledExt as _, Sizable,
     accordion::Accordion,
     button::{Button, ButtonVariants},
     collapsible::Collapsible,
-    v_flex,
+    v_flex, Sizable,
 };
 
 use crate::ComponentGallery;

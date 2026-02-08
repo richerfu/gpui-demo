@@ -1,24 +1,22 @@
 use std::rc::Rc;
-use std::time::Duration;
 
 use gpui::{
     div, prelude::*, px, size, App, Application, Bounds, Context, Entity, SharedString, Window,
     WindowBounds, WindowOptions,
 };
 use gpui_component::{
-    ActiveTheme as _, ElementExt as _, StyledExt as _, Root,
-    scroll::ScrollableElement as _,
     color_picker::{ColorPickerEvent, ColorPickerState},
     date_picker::DatePickerState,
     input::InputState,
     list::ListState,
+    scroll::ScrollableElement as _,
     select::SelectState,
     slider::{SliderEvent, SliderState},
     table::TableState,
     tree::TreeState,
-    v_flex,
-    VirtualListScrollHandle,
+    v_flex, ActiveTheme as _, Root, StyledExt as _, VirtualListScrollHandle,
 };
+use gpui_component_assets::Assets as ComponentAssets;
 
 use log::LevelFilter;
 use ohos_hilog_binding::log::Config;
@@ -59,7 +57,6 @@ pub(crate) struct ComponentGallery {
     pub(crate) sidebar_collapsed: bool,
     pub(crate) sidebar_side_right: bool,
     pub(crate) menu_message: SharedString,
-    pub(crate) markdown_ready: bool,
     _subscriptions: Vec<gpui::Subscription>,
 }
 
@@ -120,15 +117,12 @@ impl ComponentGallery {
                 .placeholder("Notes")
         });
 
-        let list_state = cx.new(|cx| {
-            ListState::new(sections::advanced::SimpleListDelegate::new(), window, cx)
-        });
-        let table_state = cx.new(|cx| {
-            TableState::new(sections::advanced::SimpleTableDelegate::new(), window, cx)
-        });
-        let tree_state = cx.new(|cx| {
-            TreeState::new(cx).items(sections::advanced::sample_tree_items())
-        });
+        let list_state =
+            cx.new(|cx| ListState::new(sections::advanced::SimpleListDelegate::new(), window, cx));
+        let table_state = cx
+            .new(|cx| TableState::new(sections::advanced::SimpleTableDelegate::new(), window, cx));
+        let tree_state =
+            cx.new(|cx| TreeState::new(cx).items(sections::advanced::sample_tree_items()));
 
         let virtual_items = (1..=40)
             .map(|ix| SharedString::from(format!("Row {}", ix)))
@@ -137,21 +131,18 @@ impl ComponentGallery {
         let virtual_scroll = VirtualListScrollHandle::new();
 
         let mut _subscriptions = vec![cx.subscribe(&slider_state, |this, _, ev, cx| {
-            if let SliderEvent::Change(value) = ev {
-                this.slider_value = value.start();
-                this.progress_value = (this.slider_value / 100.0).clamp(0.0, 1.0) * 100.0;
-                cx.notify();
-            }
+            let SliderEvent::Change(value) = ev;
+            this.slider_value = value.start();
+            this.progress_value = (this.slider_value / 100.0).clamp(0.0, 1.0) * 100.0;
+            cx.notify();
         })];
 
-        _subscriptions.push(cx.subscribe(&color_picker, |this, _, ev, cx| {
-            if let ColorPickerEvent::Change(_) = ev {
-                cx.notify();
-                let _ = this;
-            }
+        _subscriptions.push(cx.subscribe(&color_picker, |_, _, ev, cx| {
+            let ColorPickerEvent::Change(_) = ev;
+            cx.notify();
         }));
 
-        let mut view = Self {
+        let view = Self {
             input_state,
             textarea_state,
             select_state,
@@ -182,22 +173,8 @@ impl ComponentGallery {
             sidebar_collapsed: false,
             sidebar_side_right: false,
             menu_message: "Idle".into(),
-            markdown_ready: !cfg!(gles),
             _subscriptions,
         };
-
-        if cfg!(gles) {
-            cx.spawn(async move |this, cx| {
-                cx.background_executor()
-                    .timer(Duration::from_millis(300))
-                    .await;
-                let _ = this.update(cx, |view, cx| {
-                    view.markdown_ready = true;
-                    cx.notify();
-                });
-            })
-            .detach();
-        }
 
         view
     }
@@ -232,6 +209,10 @@ impl Render for ComponentGallery {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let is_compact = window.bounds().size.width <= px(680.);
 
+        let sheet_layer = Root::render_sheet_layer(window, cx);
+        let dialog_layer = Root::render_dialog_layer(window, cx);
+        let notification_layer = Root::render_notification_layer(window, cx);
+
         let content = v_flex()
             .w_full()
             .mx_auto()
@@ -260,6 +241,9 @@ impl Render for ComponentGallery {
                     .overflow_y_scrollbar()
                     .child(content),
             )
+            .children(sheet_layer)
+            .children(dialog_layer)
+            .children(notification_layer)
     }
 }
 
@@ -271,6 +255,7 @@ pub fn openharmony_app(app: OpenHarmonyApp) {
     // Initialize and run GPUI application
     // The event loop is automatically integrated by the platform
     Application::new()
+        .with_assets(ComponentAssets)
         .with_ohos_app(app.clone())
         .run(move |cx: &mut App| {
             gpui_component::init(cx);

@@ -1,6 +1,5 @@
-use gpui::{AnyElement, IntoElement, ParentElement, Styled, Window, div};
+use gpui::{div, AnyElement, IntoElement, ParentElement, Styled, Window};
 use gpui_component::{
-    StyledExt as _,
     rating::Rating,
     slider::Slider,
     stepper::{Stepper, StepperItem},

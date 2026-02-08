@@ -1,12 +1,7 @@
-use std::rc::Rc;
-
 use gpui::{
-    AnyElement, IntoElement, ParentElement, SharedString, Styled, Window, div, px, size, App,
-    Global,
+    div, px, AnyElement, App, Global, IntoElement, ParentElement, SharedString, Styled, Window,
 };
 use gpui_component::{
-    ActiveTheme as _, StyledExt as _,
-    IconName, Side,
     button::Button,
     chart::{AreaChart, BarChart, LineChart, PieChart},
     h_flex,
@@ -15,11 +10,12 @@ use gpui_component::{
     resizable::{h_resizable, resizable_panel},
     scroll::{ScrollableElement as _, ScrollbarAxis},
     setting::{SettingField, SettingGroup, SettingItem, SettingPage, Settings},
-    sidebar::{Sidebar, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarToggleButton},
+    sidebar::{
+        Sidebar, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarToggleButton,
+    },
     table::{Column, Table, TableDelegate, TableState},
-    tree::{TreeItem, TreeState, tree},
-    v_flex,
-    v_virtual_list,
+    tree::{tree, TreeItem},
+    v_flex, v_virtual_list, ActiveTheme as _, IconName, Side,
 };
 
 use crate::ComponentGallery;
@@ -150,24 +146,46 @@ struct DailyMetric {
 
 fn chart_data() -> Vec<DailyMetric> {
     vec![
-        DailyMetric { day: "Mon".into(), desktop: 120., mobile: 80. },
-        DailyMetric { day: "Tue".into(), desktop: 160., mobile: 95. },
-        DailyMetric { day: "Wed".into(), desktop: 140., mobile: 88. },
-        DailyMetric { day: "Thu".into(), desktop: 190., mobile: 120. },
-        DailyMetric { day: "Fri".into(), desktop: 170., mobile: 110. },
-        DailyMetric { day: "Sat".into(), desktop: 130., mobile: 70. },
+        DailyMetric {
+            day: "Mon".into(),
+            desktop: 120.,
+            mobile: 80.,
+        },
+        DailyMetric {
+            day: "Tue".into(),
+            desktop: 160.,
+            mobile: 95.,
+        },
+        DailyMetric {
+            day: "Wed".into(),
+            desktop: 140.,
+            mobile: 88.,
+        },
+        DailyMetric {
+            day: "Thu".into(),
+            desktop: 190.,
+            mobile: 120.,
+        },
+        DailyMetric {
+            day: "Fri".into(),
+            desktop: 170.,
+            mobile: 110.,
+        },
+        DailyMetric {
+            day: "Sat".into(),
+            desktop: 130.,
+            mobile: 70.,
+        },
     ]
 }
 
 pub fn sample_tree_items() -> Vec<TreeItem> {
     vec![
-        TreeItem::new("src", "src")
-            .children(vec![
-                TreeItem::new("lib", "lib.rs"),
-                TreeItem::new("main", "main.rs"),
-            ]),
-        TreeItem::new("assets", "assets")
-            .children(vec![TreeItem::new("logo", "logo.png")]),
+        TreeItem::new("src", "src").children(vec![
+            TreeItem::new("lib", "lib.rs"),
+            TreeItem::new("main", "main.rs"),
+        ]),
+        TreeItem::new("assets", "assets").children(vec![TreeItem::new("logo", "logo.png")]),
         TreeItem::new("readme", "README.md"),
     ]
 }
@@ -181,134 +199,142 @@ pub fn render(
     let view_entity = cx.entity();
     v_flex()
         .gap_4()
-        .child(view.card(
-            "Menus & Context",
-            v_flex()
-                .gap_3()
-                .child(
-                    Button::new("menu")
-                        .label("Dropdown Menu")
-                        .outline()
-                        .dropdown_menu(move |menu, window, cx| {
-                            menu.item(
-                                PopupMenuItem::new("Copy")
-                                    .on_click(window.listener_for(&view_entity, |this, _, _, cx| {
+        .child(
+            view.card(
+                "Menus & Context",
+                v_flex()
+                    .gap_3()
+                    .child(
+                        Button::new("menu")
+                            .label("Dropdown Menu")
+                            .outline()
+                            .dropdown_menu(move |menu, window, _cx| {
+                                menu.item(PopupMenuItem::new("Copy").on_click(window.listener_for(
+                                    &view_entity,
+                                    |this, _, _, cx| {
                                         this.menu_message = "Copied".into();
                                         cx.notify();
-                                    })),
-                            )
-                            .item(
-                                PopupMenuItem::new("Refresh")
-                                    .on_click(window.listener_for(&view_entity, |this, _, _, cx| {
-                                        this.menu_message = "Refreshed".into();
-                                        cx.notify();
-                                    })),
-                            )
-                        }),
-                )
-                .child(
-                    div()
-                        .p_3()
-                        .border_1()
-                        .border_dashed()
-                        .border_color(cx.theme().border)
-                        .rounded_lg()
-                        .child("Right click for context menu")
-                        .context_menu(|this, _window, _cx| {
-                            this.link("Docs", "https://gpui.rs")
-                                .separator()
-                                .item(PopupMenuItem::new("Inspect"))
-                                .item(PopupMenuItem::new("Disable"))
-                        }),
-                )
-                .child(
-                    div()
-                        .text_sm()
-                        .text_color(cx.theme().muted_foreground)
-                        .child(format!("Menu: {}", view.menu_message)),
-                ),
-            cx,
-        ))
-        .child(view.card(
-            "List",
-            List::new(&view.list_state)
-                .p(px(8.))
-                .border_1()
-                .border_color(cx.theme().border)
-                .rounded(cx.theme().radius),
-            cx,
-        ))
-        .child(view.card(
-            "Table",
-            Table::new(&view.table_state).stripe(true),
-            cx,
-        ))
-        .child(view.card(
-            "Tree",
-            tree(&view.tree_state, |ix, entry, selected, _window, _cx| {
-                ListItem::new(ix)
-                    .selected(selected)
-                    .pl(px(12.) * entry.depth() as f32)
-                    .child(entry.item().label.clone())
-            })
-            .border_1()
-            .border_color(cx.theme().border)
-            .rounded(cx.theme().radius)
-            .p_2(),
-            cx,
-        ))
-        .child(view.card(
-            "Virtual List",
-            div()
+                                    },
+                                )))
+                                .item(
+                                    PopupMenuItem::new("Refresh").on_click(window.listener_for(
+                                        &view_entity,
+                                        |this, _, _, cx| {
+                                            this.menu_message = "Refreshed".into();
+                                            cx.notify();
+                                        },
+                                    )),
+                                )
+                            }),
+                    )
+                    .child(
+                        div()
+                            .p_3()
+                            .border_1()
+                            .border_dashed()
+                            .border_color(cx.theme().border)
+                            .rounded_lg()
+                            .child("Right click for context menu")
+                            .context_menu(|this, _window, _cx| {
+                                this.link("Docs", "https://gpui.rs")
+                                    .separator()
+                                    .item(PopupMenuItem::new("Inspect"))
+                                    .item(PopupMenuItem::new("Disable"))
+                            }),
+                    )
+                    .child(
+                        div()
+                            .text_sm()
+                            .text_color(cx.theme().muted_foreground)
+                            .child(format!("Menu: {}", view.menu_message)),
+                    ),
+                cx,
+            ),
+        )
+        .child(
+            view.card(
+                "List",
+                List::new(&view.list_state)
+                    .p(px(8.))
+                    .border_1()
+                    .border_color(cx.theme().border)
+                    .rounded(cx.theme().radius),
+                cx,
+            ),
+        )
+        .child(view.card("Table", Table::new(&view.table_state).stripe(true), cx))
+        .child(
+            view.card(
+                "Tree",
+                tree(&view.tree_state, |ix, entry, selected, _window, _cx| {
+                    ListItem::new(ix)
+                        .selected(selected)
+                        .pl(px(12.) * entry.depth() as f32)
+                        .child(entry.item().label.clone())
+                })
                 .border_1()
                 .border_color(cx.theme().border)
                 .rounded(cx.theme().radius)
-                .h(px(180.))
-                .child(
-                    v_virtual_list(
-                        cx.entity(),
-                        "virtual-list",
-                        view.virtual_sizes.clone(),
-                        move |story, visible_range: std::ops::Range<usize>, _, _| {
-                            visible_range
-                                .map(|ix| {
-                                    div()
-                                        .h(px(32.))
-                                        .px_2()
-                                        .items_center()
-                                        .child(story.virtual_items[ix].clone())
-                                })
-                                .collect()
-                        },
+                .p_2(),
+                cx,
+            ),
+        )
+        .child(
+            view.card(
+                "Virtual List",
+                div()
+                    .border_1()
+                    .border_color(cx.theme().border)
+                    .rounded(cx.theme().radius)
+                    .h(px(180.))
+                    .child(
+                        v_virtual_list(
+                            cx.entity(),
+                            "virtual-list",
+                            view.virtual_sizes.clone(),
+                            move |story, visible_range: std::ops::Range<usize>, _, _| {
+                                visible_range
+                                    .map(|ix| {
+                                        div()
+                                            .h(px(32.))
+                                            .px_2()
+                                            .items_center()
+                                            .child(story.virtual_items[ix].clone())
+                                    })
+                                    .collect()
+                            },
+                        )
+                        .track_scroll(&view.virtual_scroll),
                     )
-                    .track_scroll(&view.virtual_scroll),
-                )
-                .scrollbar(&view.virtual_scroll, ScrollbarAxis::Vertical),
-            cx,
-        ))
-        .child(view.card(
-            "Resizable",
-            div()
-                .h(px(180.))
-                .border_1()
-                .border_color(cx.theme().border)
-                .child(if is_compact {
-                    v_flex()
-                        .gap_2()
-                        .p_2()
-                        .child(div().child("Left"))
-                        .child(div().child("Center"))
-                        .child(div().child("Right"))
-                        .into_any_element()
-                } else {
-                    h_resizable("resizable")
-                        .child(resizable_panel().size(px(120.)).child(div().child("Left")))
-                        .child(resizable_panel().child(div().child("Center")))
-                        .child(resizable_panel().size(px(120.)).child(div().child("Right")))
-                        .into_any_element()
-                }),
-            cx,
-        ))
+                    .scrollbar(&view.virtual_scroll, ScrollbarAxis::Vertical),
+                cx,
+            ),
+        )
+        .child(
+            view.card(
+                "Resizable",
+                div()
+                    .h(px(180.))
+                    .border_1()
+                    .border_color(cx.theme().border)
+                    .child(if is_compact {
+                        v_flex()
+                            .gap_2()
+                            .p_2()
+                            .child(div().child("Left"))
+                            .child(div().child("Center"))
+                            .child(div().child("Right"))
+                            .into_any_element()
+                    } else {
+                        h_resizable("resizable")
+                            .child(resizable_panel().size(px(120.)).child(div().child("Left")))
+                            .child(resizable_panel().child(div().child("Center")))
+                            .child(resizable_panel().size(px(120.)).child(div().child("Right")))
+                            .into_any_element()
+                    }),
+                cx,
+            ),
+        )
         .child(view.card(
             "Sidebar",
             if is_compact {
@@ -317,12 +343,12 @@ pub fn render(
                     .child(
                         Sidebar::new("sidebar")
                             .collapsed(view.sidebar_collapsed)
-                            .side(if view.sidebar_side_right { Side::Right } else { Side::Left })
-                            .header(
-                                SidebarHeader::new()
-                                    .child("Workspace")
-                                    .text_sm(),
-                            )
+                            .side(if view.sidebar_side_right {
+                                Side::Right
+                            } else {
+                                Side::Left
+                            })
+                            .header(SidebarHeader::new().child("Workspace").text_sm())
                             .child(
                                 SidebarMenu::new()
                                     .child(
@@ -345,17 +371,19 @@ pub fn render(
                                     ),
                             )
                             .footer(
-                                SidebarFooter::new()
-                                    .child("v0.1")
-                                    .child(
-                                        SidebarToggleButton::new()
-                                            .side(if view.sidebar_side_right { Side::Right } else { Side::Left })
-                                            .collapsed(view.sidebar_collapsed)
-                                            .on_click(cx.listener(|this, _, _, cx| {
-                                                this.sidebar_collapsed = !this.sidebar_collapsed;
-                                                cx.notify();
-                                            })),
-                                    ),
+                                SidebarFooter::new().child("v0.1").child(
+                                    SidebarToggleButton::new()
+                                        .side(if view.sidebar_side_right {
+                                            Side::Right
+                                        } else {
+                                            Side::Left
+                                        })
+                                        .collapsed(view.sidebar_collapsed)
+                                        .on_click(cx.listener(|this, _, _, cx| {
+                                            this.sidebar_collapsed = !this.sidebar_collapsed;
+                                            cx.notify();
+                                        })),
+                                ),
                             ),
                     )
                     .child(
@@ -387,12 +415,12 @@ pub fn render(
                     .child(
                         Sidebar::new("sidebar")
                             .collapsed(view.sidebar_collapsed)
-                            .side(if view.sidebar_side_right { Side::Right } else { Side::Left })
-                            .header(
-                                SidebarHeader::new()
-                                    .child("Workspace")
-                                    .text_sm(),
-                            )
+                            .side(if view.sidebar_side_right {
+                                Side::Right
+                            } else {
+                                Side::Left
+                            })
+                            .header(SidebarHeader::new().child("Workspace").text_sm())
                             .child(
                                 SidebarMenu::new()
                                     .child(
@@ -415,17 +443,19 @@ pub fn render(
                                     ),
                             )
                             .footer(
-                                SidebarFooter::new()
-                                    .child("v0.1")
-                                    .child(
-                                        SidebarToggleButton::new()
-                                            .side(if view.sidebar_side_right { Side::Right } else { Side::Left })
-                                            .collapsed(view.sidebar_collapsed)
-                                            .on_click(cx.listener(|this, _, _, cx| {
-                                                this.sidebar_collapsed = !this.sidebar_collapsed;
-                                                cx.notify();
-                                            })),
-                                    ),
+                                SidebarFooter::new().child("v0.1").child(
+                                    SidebarToggleButton::new()
+                                        .side(if view.sidebar_side_right {
+                                            Side::Right
+                                        } else {
+                                            Side::Left
+                                        })
+                                        .collapsed(view.sidebar_collapsed)
+                                        .on_click(cx.listener(|this, _, _, cx| {
+                                            this.sidebar_collapsed = !this.sidebar_collapsed;
+                                            cx.notify();
+                                        })),
+                                ),
                             ),
                     )
                     .child(
@@ -476,10 +506,7 @@ pub fn render(
                             .x(|d| d.day.clone())
                             .y(|d| d.mobile),
                     )
-                    .child(
-                        PieChart::new(data.clone())
-                            .value(|d| d.desktop as f32),
-                    )
+                    .child(PieChart::new(data.clone()).value(|d| d.desktop as f32))
             },
             cx,
         ))

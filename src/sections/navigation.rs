@@ -1,4 +1,5 @@
-use gpui::{AnyElement, IntoElement, ParentElement, Styled, Window};
+use gpui::prelude::FluentBuilder as _;
+use gpui::{px, AnyElement, IntoElement, ParentElement, Styled, Window};
 use gpui_component::{
     breadcrumb::{Breadcrumb, BreadcrumbItem},
     pagination::Pagination,
@@ -10,9 +11,10 @@ use crate::ComponentGallery;
 
 pub fn render(
     view: &mut ComponentGallery,
-    _window: &mut Window,
+    window: &mut Window,
     cx: &mut gpui::Context<ComponentGallery>,
 ) -> AnyElement {
+    let is_compact = window.bounds().size.width <= px(680.);
     view.card(
         "Navigation",
         v_flex()
@@ -26,6 +28,7 @@ pub fn render(
             .child(
                 TabBar::new("tabs")
                     .selected_index(view.tab_index)
+                    .when(is_compact, |this| this.w_full())
                     .on_click(cx.listener(|this, ix, _, cx| {
                         this.tab_index = *ix;
                         cx.notify();
@@ -38,6 +41,7 @@ pub fn render(
                 Pagination::new("pagination")
                     .current_page(view.pagination_page)
                     .total_pages(8)
+                    .when(is_compact, |this| this.w_full())
                     .on_click({
                         let entity = cx.entity();
                         move |page, _, cx| {
